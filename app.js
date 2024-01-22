@@ -508,7 +508,7 @@ app.use('/ext/gettx/:txid', function(req, res) {
                       vin: rvin,
                       vout: rvout,
                       total: total.toFixed(8),
-                      timestamp: rtx.time,
+                      timestamp: rtx.time ? rtx.time : rtx.blocktime,
                       blockhash: '-',
                       blockindex: -1
                     };
@@ -520,7 +520,7 @@ app.use('/ext/gettx/:txid', function(req, res) {
                       vin: rvin,
                       vout: rvout,
                       total: total.toFixed(8),
-                      timestamp: rtx.time,
+                      timestamp: rtx.time ? rtx.time : rtx.blocktime,
                       blockhash: rtx.blockhash,
                       blockindex: rtx.blockheight
                     };

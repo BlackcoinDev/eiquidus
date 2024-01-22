@@ -225,7 +225,7 @@ function route_get_tx(res, txid) {
                             vin: rvin,
                             vout: rvout,
                             total: total.toFixed(8),
-                            timestamp: rtx.time,
+                            timestamp: rtx.time ? rtx.time : rtx.blocktime,
                             blockhash: rtx.blockhash,
                             blockindex: block.height
                           };
@@ -250,7 +250,7 @@ function route_get_tx(res, txid) {
                         vin: rvin,
                         vout: rvout,
                         total: total.toFixed(8),
-                        timestamp: rtx.time,
+                        timestamp: rtx.time ? rtx.time : rtx.blocktime,
                         blockhash: rtx.blockhash,
                         blockindex: rtx.blockheight
                       };
