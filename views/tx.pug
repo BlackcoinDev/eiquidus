@@ -110,8 +110,7 @@ block content
                         tr.table-info.text-center
                           td #{settings.localization.new_coins}
                       else
-                        - var ramount = Number(address.amount / 100000000).toLocaleString('en',{'minimumFractionDigits':2,'maximumFractionDigits':8,'useGrouping':true});
-                        - var ramountParts = ramount.split('.');
+                        - var ramountParts = address.amountFixed.split('.');;
                         tr
                           td
                             if address.addresses != 'hidden_address' && address.addresses != 'unknown_address'
