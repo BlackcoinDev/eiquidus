@@ -81,7 +81,7 @@ block content
                   div
                     a(href='/api/getrawtransaction?txid=' + settings.api_page.sample_data.txhash + '&decrypt=0') #{address}/api/getrawtransaction?txid=#{settings.api_page.sample_data.txhash}&decrypt=0
                   div
-                    a(href='/api/getrawtransaction?txid=' + settings.api_page.sample_data.txhash + '&decrypt=1') #{address}/api/getrawtransaction?txid=#{settings.api_page.sample_data.txhash}&decrypt=1
+                    a(href='/api/getrawtransaction?txid=' + settings.api_page.sample_data.txhash + '&decrypt=2') #{address}/api/getrawtransaction?txid=#{settings.api_page.sample_data.txhash}&decrypt=2
             if settings.api_page.public_apis.rpc.getnetworkhashps.enabled == true && settings.shared_pages.show_hashrate == true && settings.api_cmds['getnetworkhashps'] != null && settings.api_cmds['getnetworkhashps'] != ''
               li
                 p

@@ -43,7 +43,7 @@ block content
       .card-header
         strong=settings.localization.tx_hash + ': ' + tx.txid
         if settings.api_page.public_apis.rpc.getrawtransaction.enabled == true
-          a.d-none.d-md-inline(href=`/api/getrawtransaction?txid=${tx.txid}&decrypt=1`, style='color: var(--bs-body-color);')
+          a.d-none.d-md-inline(href=`/api/getrawtransaction?txid=${tx.txid}&decrypt=2`, style='color: var(--bs-body-color);')
             span.fa-solid.fa-circle-info.float-end(data-bs-toggle='tooltip', data-bs-placement='top', title=settings.localization.view_raw_tx_data)
       table#tx-table.table.table-bordered.table-striped.summary-table.mobile-border-right
         thead
@@ -95,40 +95,46 @@ block content
                 tr(class=theadClasses)
                   th #{settings.localization.tx_address}
                   if (tx.vin.length > 0)
-                    if tx.vin[0].addresses != 'coinbase'
-                      th.text-center #{settings.localization.mkt_amount}
-                        span.small.fw-normal  (#{settings.coin.symbol})
-              tbody
+                    if tx.tx_type == null || tx.tx_type.indexOf('pos') === -1
+                      if tx.vin[0].addresses != 'coinbase'
+                        th.text-center #{settings.localization.mkt_amount}
+                          span.small.fw-normal  (#{settings.coin.symbol})
+                tbody
                 if tx.vin.length > 0
-                  each address in tx.vin
-                    if address.addresses == 'coinbase'
-                      tr.table-info.text-center
-                        td #{settings.localization.new_coins}
-                    else
-                      - var ramountParts = address.amountFixed.split('.');
-                      tr
-                        td
-                          if address.addresses != 'hidden_address' && address.addresses != 'unknown_address'
-                            a.breakWord(href='/address/' + address.addresses)
-                              if address.claim_name == null || address.claim_name == ''
-                                =address.addresses
+                  if tx.tx_type != null && tx.tx_type.indexOf('pos') !== -1
+                    tr.table-info.text-center
+                      td.bottom-border-1 #{settings.localization.proof_of_stake}
+                  else
+                    each address in tx.vin
+                      if address.addresses == 'coinbase'
+                        tr.table-info.text-center
+                          td #{settings.localization.new_coins}
+                      else
+                        - var ramount = Number(address.amount / 100000000).toLocaleString('en',{'minimumFractionDigits':2,'maximumFractionDigits':8,'useGrouping':true});
+                        - var ramountParts = ramount.split('.');
+                        tr
+                          td
+                            if address.addresses != 'hidden_address' && address.addresses != 'unknown_address'
+                              a.breakWord(href='/address/' + address.addresses)
+                                if address.claim_name == null || address.claim_name == ''
+                                  =address.addresses
+                                else
+                                  =address.claim_name
+                              include ./includes/rl_labels.pug
+                            else if address.addresses == 'hidden_address'
+                              if settings.address_page.enable_hidden_address_view == true
+                                a.breakWord(href='/address/hidden_address')
+                                  =settings.localization.hidden_sender
                               else
-                                =address.claim_name
-                            include ./includes/rl_labels.pug
-                          else if address.addresses == 'hidden_address'
-                            if settings.address_page.enable_hidden_address_view == true
-                              a.breakWord(href='/address/hidden_address')
                                 =settings.localization.hidden_sender
                             else
-                              =settings.localization.hidden_sender
-                          else
-                            if settings.address_page.enable_unknown_address_view == true
-                              a.breakWord(href='/address/unknown_address')
+                              if settings.address_page.enable_unknown_address_view == true
+                                a.breakWord(href='/address/unknown_address')
                                 =settings.localization.unknown_sender
-                            else
-                              =settings.localization.unknown_sender
-                        td.table-danger.text-center #{ramountParts[0]}.
-                          span.decimal #{ramountParts[1]}
+                              else
+                                =settings.localization.unknown_sender
+                          td.table-danger.text-center #{ramountParts[0]}.
+                            span.decimal #{ramountParts[1]}
                 else
                   tr.table-info.text-center
                     td.bottom-border-1 #{settings.localization.proof_of_stake}

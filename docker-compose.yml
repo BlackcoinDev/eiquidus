@@ -1,0 +1,16 @@
+services:
+  mongodb:
+    image: mongodb/mongodb-community-server:8.0.4-ubuntu2204
+    container_name: eiquidus-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - /home/blackcoin/mongodb:/data/db
+      - /home/blackcoin/mongodb/configdb:/data/configdb
+    environment:
+      MONGO_INITDB_DATABASE: eiquidus-tblk
+      # Use non-deprecated environment variable names
+      MONGODB_INITDB_ROOT_USERNAME: blackcoin
+      MONGODB_INITDB_ROOT_PASSWORD: blackcoinP@ssw0rd
+    user: "999:999"
