@@ -1683,7 +1683,7 @@
     "getblockhash": "getblockhash",
     // getblock: Returns an object with information about a particular block
     "getblock": "getblock",
-    // getrawtransaction: Returns raw transaction data. Can return a hex-encoded string that is serialized or an object with txid information depending on the decrypt value (0 = false or 1 = true)
+    // getrawtransaction: Returns raw transaction data. Can return a hex-encoded string that is serialized or an object with txid information depending on the decrypt value (0 = false or 2 = true)
     "getrawtransaction": "getrawtransaction",
     // getinfo: Returns an object containing various state info
     "getinfo": "getinfo",
@@ -1850,6 +1850,18 @@
       //          If set to false, zk-SNARKs private txs will not be properly read or saved by the explorer
       //          NOTE: Enabling this feature will require a full reindex of the blockchain data
       "enabled": false
+    },
+    // coinstake: A collection of settings that pertain to PoS (proof-of-stake) coinstake transactions.
+    //            These options only affect how the explorer displays PoS blocks/transactions and do
+    //            not change what data is stored. Already-synced blocks/txs will pick up the changes
+    //            immediately on the next page render (no reindex required).
+    "coinstake": {
+      // dev_fund_address: The address that receives the optional dev-fund output on PoS coinstake
+      //                   blocks (see blackcoin-more src/wallet/staking.cpp CreateCoinStake). When
+      //                   set, this address is excluded from the "Extracted By" list on PoS blocks
+      //                   and transactions so the dev fund is not mis-attributed to a staker.
+      //                   Leave blank for chains that do not have a dev fund.
+      "dev_fund_address": ""
     }
   },
 

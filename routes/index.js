@@ -6,16 +6,45 @@ const lib = require('../lib/explorer');
 const async = require('async');
 const Decimal = require('decimal.js');
 
+// filter the vout list of a PoS coinstake tx so that the "Extracted By" list only
+// includes the staker's stake-refund address(es). Excludes:
+//   - 0-value vouts (the bech32/bech32m "minter key" marker output, value 0)
+//   - the configured dev_fund_address (the trailing vout on chains that route
+//     part of the PoS subsidy to a dev fund, see blackcoin-more staking.cpp)
+function get_staker_addresses(tx) {
+  const dev_fund_address = (settings.blockchain_specific.coinstake != null ? settings.blockchain_specific.coinstake.dev_fund_address : null);
+
+  return (tx.vout || [])
+    .filter(v => v.addresses != null && v.amount > 0)
+    .filter(v => !(dev_fund_address != null && dev_fund_address !== '' && v.addresses === dev_fund_address))
+    .map(v => v.addresses);
+}
+
 function send_block_data(res, block, txs, title_text, orphan) {
   let extracted_by_addresses = [];
 
   // check if the extracted by addresses should be found
   if (settings.block_page.show_extracted_by == true && txs != null && txs.length > 0) {
     // find the block reward tx
-    const block_reward_tx = txs.find(tx => tx.vin != null && (tx.vin.length === 0 || (tx.vin.length === 1 && tx.vin[0].addresses === 'coinbase' && tx.vin[0].amount != 0)));
+    // find the block reward tx. PoS coinstakes have the kernel in vin (kept for
+    // balance tracking) so they won't match the empty-vin/coinbase check -- also
+    // match on tx_type containing 'pos'.
+    const block_reward_tx = txs.find(tx => tx.vin != null && (
+      tx.vin.length === 0 ||
+      (tx.vin.length === 1 && tx.vin[0].addresses === 'coinbase' && tx.vin[0].amount != 0) ||
+      (tx.tx_type != null && tx.tx_type.indexOf('pos') !== -1)
+    ));
 
-    // get a list of all the block reward addresses
-    extracted_by_addresses = (block_reward_tx ? block_reward_tx.vout.map(v => v.addresses) : []);
+    if (block_reward_tx != null) {
+      // for PoS coinstakes (tx_type includes 'pos'), filter out the minter key and
+      // dev fund so only the staker's stake-refund address(es) are shown
+      if (block_reward_tx.tx_type != null && block_reward_tx.tx_type.indexOf('pos') !== -1) {
+        extracted_by_addresses = get_staker_addresses(block_reward_tx);
+      } else {
+        // get a list of all the block reward addresses
+        extracted_by_addresses = block_reward_tx.vout.map(v => v.addresses);
+      }
+    }
 
     // add claim name data to the array
     db.get_extracted_by_claim_names(extracted_by_addresses, function(updated_extracted_by_addresses) {
@@ -72,11 +101,21 @@ function send_tx_data(res, tx, blockcount, orphan) {
         tx.vin.length === 1 &&
         tx.vin[0].addresses === 'coinbase' &&
         tx.vin[0].amount != 0
-      )
+      ) ||
+      // PoS coinstake: vin holds the kernel entry (kept for balance tracking in
+      // block_sync) so the vin.length==0/coinbase check above won't match.
+      // detect PoS via tx_type instead.
+      (tx.tx_type != null && tx.tx_type.indexOf('pos') !== -1)
     )
   ) {
-    // get a list of all the block reward addresses
-    extracted_by_addresses = tx.vout.map(v => v.addresses);
+    // for PoS coinstakes (tx_type includes 'pos'), filter out the minter key and
+    // dev fund so only the staker's stake-refund address(es) are shown
+    if (tx.tx_type != null && tx.tx_type.indexOf('pos') !== -1) {
+      extracted_by_addresses = get_staker_addresses(tx);
+    } else {
+      // get a list of all the block reward addresses
+      extracted_by_addresses = tx.vout.map(v => v.addresses);
+    }
 
     // add claim name data to the array
     db.get_extracted_by_claim_names(extracted_by_addresses, function(updated_extracted_by_addresses) {
